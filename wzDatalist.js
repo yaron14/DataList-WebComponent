@@ -3,8 +3,7 @@ class WzDatalist extends HTMLElement {
 		super();
 		this.shadow = this.attachShadow({ mode: "open" });
 		this.myElem = "WZ-DATALIST";
-		this.MyStyle = `
-      <style>
+		this.MyStyle = `<style>
       * {
         padding: 0;
         margin: 0;
@@ -56,17 +55,16 @@ class WzDatalist extends HTMLElement {
         display: block;
         z-index: 999999;
       }
-      </style>
-    `;
+      </style>`;
 	}
 
 	listElem(key) {
 		if (!key) {
-			return this.arr.map(({ ID, RepName }) => `<li value="${ID}">${RepName}</li>`).join("");
+			return this.arr.map(({ ID, Text }) => `<li value="${ID}">${Text}</li>`).join("");
 		}
 		return this.arr
-			.filter(({ RepName }) => RepName.includes(key))
-			.map(({ ID, RepName }) => `<li value="${ID}">${RepName}</li>`)
+			.filter(({ Text }) => Text.includes(key))
+			.map(({ ID, Text }) => `<li value="${ID}">${Text}</li>`)
 			.join("");
 	}
 
@@ -75,13 +73,11 @@ class WzDatalist extends HTMLElement {
 		if (typeof this.arr !== "object" || !this.arr.length) {
 			throw new Error("dataset is not an array of objects or no values in array");
 		}
-		this.shadow.innerHTML = `
-    ${this.MyStyle}
+		this.shadow.innerHTML = `${this.MyStyle}
     <input type="text" placeholder="${this.getAttribute("placeholder")}" />
     <div class="container">
       <ul></ul>      
-    </div>
-    `;
+    </div>`;
 		this.shadow.addEventListener("focus", this.render.bind(this), true);
 		this.shadow.addEventListener("keyup", this.render.bind(this));
 		this.shadow.querySelector("ul").addEventListener("click", this.fireClick.bind(this));
