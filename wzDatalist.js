@@ -61,14 +61,18 @@ class WzDatalist extends HTMLElement {
 	}
 
 	listElem(key) {
-		if (!key) {
-			return this.arr.map(({ ID, Text }) => `<li value="${ID}">${Text}</li>`).join("");
+		try {
+			if (!key) {
+				return this.arr.map(({ ID, Text }) => `<li value="${ID}">${Text}</li>`).join("");
+			}
+			const termRegex = new RegExp(key, "gi");
+			return this.arr
+				.filter(({ Text }) => Text.includes(key))
+				.map(({ ID, Text }) => `<li value="${ID}">${Text.replace(termRegex, `<strong>${key}</strong>`)}</li>`)
+				.join("");
+		} catch (error) {
+			throw new Error(error.message);
 		}
-		const termRegex = new RegExp(key, "gi");
-		return this.arr
-			.filter(({ Text }) => Text.includes(key))
-			.map(({ ID, Text }) => `<li value="${ID}">${Text.replace(termRegex, `<strong>${key}</strong>`)}</li>`)
-			.join("");
 	}
 
 	setData(arr) {
@@ -85,16 +89,17 @@ class WzDatalist extends HTMLElement {
     `;
 		this.shadow.addEventListener("focus", this.render.bind(this), true);
 		this.shadow.addEventListener("keyup", this.render.bind(this));
-		this.shadow.querySelector("ul").addEventListener("click", this.fireClick.bind(this));
+		this.shadow.addEventListener("click", this.fireClick.bind(this));
 		document.addEventListener("click", this.closeSuggest.bind(this));
 	}
 
 	render(e) {
-		if (e.type === "focus" || e.type === "keyup") {
-			this.shadow.querySelector("input").value = e.type === "focus" ? "" : e.target.value;
-			this.shadow.querySelector("ul").innerHTML = this.listElem(e.target.value);
-			this.shadow.querySelector(".container").classList.add("on-focus");
+		if (e.key === "Escape") {
+			this.shadow.querySelector(".container").classList.remove("on-focus");
+			return;
 		}
+		this.shadow.querySelector("ul").innerHTML = this.listElem(e.target.value);
+		this.shadow.querySelector(".container").classList.add("on-focus");
 	}
 
 	fireClick(e) {
@@ -102,8 +107,7 @@ class WzDatalist extends HTMLElement {
 			return;
 		}
 		this.shadow.querySelector(".container").classList.remove("on-focus");
-		postMessage({ WzDatalist_GETDATA: e.target.getAttribute("value") });
-		this.shadow.querySelector("input").value = "";
+		postMessage({ WzDatalist_GetListId: e.target.getAttribute("value") });
 	}
 
 	closeSuggest(e) {
